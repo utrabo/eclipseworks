@@ -17,9 +17,9 @@ public class ProjectService : IProjectService
         return await _projectRepository.CreateProjectAsync(project);
     }
 
-    public Task<ProjectTask> CreateTaskAsync(ProjectTask projectTask)
+    public async Task<ProjectTask> CreateTaskAsync(ProjectTask projectTask)
     {
-        throw new NotImplementedException();
+        return await _projectRepository.CreateTaskAsync(projectTask);
     }
 
     public async Task DeleteProjectAsync(int projectId)
