@@ -53,9 +53,9 @@ public class ProjectService : IProjectService
         throw new NotImplementedException();
     }
 
-    public Task<ProjectTask> UpdateTaskAsync(ProjectTask task)
+    public async Task<ProjectTask> UpdateTaskAsync(ProjectTask task)
     {
-        throw new NotImplementedException();
+        return await _projectRepository.UpdateTaskAsync(task);
     }
 
     public Task<ProjectTaskComment> AddTaskCommentAsync(ProjectTaskComment projectTaskComment)

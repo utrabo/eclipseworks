@@ -189,5 +189,47 @@ public class ProjectControllerIntegrationTests
             Assert.Equal(task.ProjectId, createdTask.ProjectId);
         }
     }
-    
+
+    [Collection("Sequential")]
+    public class ProjectController_UpdateTask : IntegrationTestBase
+    {
+        protected override void SeedDatabase()
+        {
+            var user = new UserAccount { Name = "Test User" };
+            _context.UserAccount.Add(user);
+            _context.SaveChanges();
+
+            var project = new Project { Name = "Test Project", UserAccountId = user.Id };
+            _context.Project.Add(project);
+            _context.SaveChanges();
+
+            var task = new ProjectTask(ProjectTaskPriority.High) { Title = "Test Task", Description = "Description", DueDate = DateTime.UtcNow, Status = ProjectTaskStatus.Pending, ProjectId = project.Id };
+            _context.ProjectTask.Add(task);
+            _context.SaveChanges();
+        }
+
+        [Fact]
+        public async Task UpdateTask_ReturnsTask()
+        {
+            // Arrange
+            var task = _context.ProjectTask.First();
+            task.Title = "Updated Task";
+
+            var service = new ProjectService(_repository);
+            var controller = new ProjectController(service);
+
+            // Act
+            var result = await controller.UpdateTask(task);
+
+            // Assert
+            var actionResult = Assert.IsType<OkObjectResult>(result.Result);
+
+            var updatedTask = Assert.IsType<ProjectTask>(actionResult.Value);
+            Assert.Equal(task.Title, updatedTask.Title);
+            Assert.Equal(task.Description, updatedTask.Description);
+            Assert.Equal(task.DueDate, updatedTask.DueDate);
+            Assert.Equal(task.Status, updatedTask.Status);
+            Assert.Equal(task.ProjectId, updatedTask.ProjectId);
+        }
+    }
 }

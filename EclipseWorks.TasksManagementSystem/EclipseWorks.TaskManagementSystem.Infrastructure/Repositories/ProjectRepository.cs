@@ -48,4 +48,11 @@ public class ProjectRepository : IProjectRepository
     {
         return await _context.ProjectTask.Where(task => task.ProjectId == projectId).ToListAsync();
     }
+
+    public async Task<ProjectTask> UpdateTaskAsync(ProjectTask task)
+    {
+        _context.ProjectTask.Update(task);
+        await _context.SaveChangesAsync();
+        return task;
+    }
 }
