@@ -25,6 +25,11 @@ public class ProjectRepository : IProjectRepository
         await _context.SaveChangesAsync();
     }
 
+    public async Task<List<Project>> GetProjectsByUserIdAsync(int userId)
+    {
+        return await _context.Project.Where(project => project.UserAccountId == userId).ToListAsync();
+    }
+
     public async Task<List<ProjectTask>> GetTasksByProjectIdAsync(int projectId)
     {
         return await _context.ProjectTask.Where(task => task.ProjectId == projectId).ToListAsync();

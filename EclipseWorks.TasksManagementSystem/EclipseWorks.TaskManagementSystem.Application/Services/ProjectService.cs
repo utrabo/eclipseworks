@@ -38,14 +38,14 @@ public class ProjectService : IProjectService
         throw new NotImplementedException();
     }
 
-    public Task<List<Project>> GetProjectsByUserIdAsync(int userId)
+    public async Task<List<Project>> GetProjectsByUserIdAsync(int userId)
     {
-        throw new NotImplementedException();
+        return await _projectRepository.GetProjectsByUserIdAsync(userId);
     }
 
-    public Task<List<ProjectTask>> GetTasksByProjectIdAsync(int projectId)
+    public async Task<List<ProjectTask>> GetTasksByProjectIdAsync(int projectId)
     {
-        throw new NotImplementedException();
+        return await _projectRepository.GetTasksByProjectIdAsync(projectId);
     }
 
     public Task<Project> UpdateProjectAsync(Project project)

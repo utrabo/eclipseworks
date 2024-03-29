@@ -118,7 +118,7 @@ namespace EclipseWorks.TaskManagementSystem.Tests.UnitTests
         public async Task CreateTask_ReturnsTask()
         {
             // Arrange
-            var task = new ProjectTask("Project 1", "Task 1", DateTime.Now, ProjectTaskStatus.Pending, ProjectTaskPriority.Medium);
+            var task = new ProjectTask(ProjectTaskPriority.Medium) { Title = "Task 1", Description = "Task 1", DueDate = DateTime.Now, Status = ProjectTaskStatus.Pending, ProjectId = 1 };
             var mockProjectService = new Mock<IProjectService>();
             mockProjectService.Setup(service => service.CreateTaskAsync(It.IsAny<ProjectTask>()))
                               .ReturnsAsync(task);
@@ -142,7 +142,7 @@ namespace EclipseWorks.TaskManagementSystem.Tests.UnitTests
         public async Task UpdateTask_ReturnsTask()
         {
             // Arrange
-            var task = new ProjectTask("Task 1", "Task 1", DateTime.Now, ProjectTaskStatus.Pending, ProjectTaskPriority.Medium);
+            var task = new ProjectTask(ProjectTaskPriority.Medium) { Title = "Task 1", Description = "Task 1", DueDate = DateTime.Now, Status = ProjectTaskStatus.Pending, ProjectId = 1 };
             var mockProjectService = new Mock<IProjectService>();
             mockProjectService.Setup(service => service.UpdateTaskAsync(It.IsAny<ProjectTask>()))
                               .ReturnsAsync(task);
@@ -216,8 +216,8 @@ namespace EclipseWorks.TaskManagementSystem.Tests.UnitTests
         {
             return new List<ProjectTask>
             {
-                new ProjectTask("Project 1", "Task 1", DateTime.Now, ProjectTaskStatus.Pending, ProjectTaskPriority.Medium),
-                new ProjectTask("Project 1", "Task 2", DateTime.Now, ProjectTaskStatus.Pending, ProjectTaskPriority.Medium)
+                new ProjectTask(ProjectTaskPriority.Medium) { Title = "Task 1", Description = "Task 1", DueDate = DateTime.Now, Status = ProjectTaskStatus.Pending, ProjectId = 1 },
+                new ProjectTask(ProjectTaskPriority.Medium) { Title = "Task 2", Description = "Task 2", DueDate = DateTime.Now, Status = ProjectTaskStatus.Pending, ProjectId = 1 }
             };
         }
     }

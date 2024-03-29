@@ -21,7 +21,7 @@ public class ProjectServiceTests
         mockProjectRepository.Setup(repo => repo.GetTasksByProjectIdAsync(projectId))
                              .ReturnsAsync(new List<ProjectTask>
                              {
-                                new ProjectTask("Task 1", "Task 1", DateTime.Now, ProjectTaskStatus.Pending, ProjectTaskPriority.Low)
+                                new ProjectTask(ProjectTaskPriority.Low) { Title = "Task 1", Description = "Task 1", DueDate = DateTime.Now, Status = ProjectTaskStatus.Pending, ProjectId = 1 }
                              });
 
         IProjectService service = new ProjectService(mockProjectRepository.Object);

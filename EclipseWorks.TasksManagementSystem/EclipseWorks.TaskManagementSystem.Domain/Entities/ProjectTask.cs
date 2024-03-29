@@ -9,12 +9,8 @@ public class ProjectTask
     public ProjectTaskStatus Status { get; set; }
     public ProjectTaskPriority Priority { get; private set; }
 
-    public ProjectTask(string title, string description, DateTime dueDate, ProjectTaskStatus status, ProjectTaskPriority priority)
+    public ProjectTask(ProjectTaskPriority priority)
     {
-        Title = title;
-        Description = description;
-        DueDate = dueDate;
-        Status = status;
         Priority = priority;
     }
 
