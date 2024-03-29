@@ -39,6 +39,18 @@ public class ProjectRepository : IProjectRepository
         await _context.SaveChangesAsync();
     }
 
+    public async Task DeleteTaskAsync(int taskId)
+    {
+        var task = await _context.ProjectTask.FindAsync(taskId);
+        if (task == null)
+        {
+            throw new InvalidOperationException("Task not found.");
+        }
+
+        _context.ProjectTask.Remove(task);
+        await _context.SaveChangesAsync();
+    }
+
     public async Task<List<Project>> GetProjectsByUserIdAsync(int userId)
     {
         return await _context.Project.Where(project => project.UserAccountId == userId).ToListAsync();

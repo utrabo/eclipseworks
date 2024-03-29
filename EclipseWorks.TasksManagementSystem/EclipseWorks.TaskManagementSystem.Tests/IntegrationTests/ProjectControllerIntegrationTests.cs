@@ -232,4 +232,39 @@ public class ProjectControllerIntegrationTests
             Assert.Equal(task.ProjectId, updatedTask.ProjectId);
         }
     }
+
+    [Collection("Sequential")]
+    public class ProjectController_DeleteTask : IntegrationTestBase
+    {
+        protected override void SeedDatabase()
+        {
+            var user = new UserAccount { Name = "Test User" };
+            _context.UserAccount.Add(user);
+            _context.SaveChanges();
+
+            var project = new Project { Name = "Test Project", UserAccountId = user.Id };
+            _context.Project.Add(project);
+            _context.SaveChanges();
+
+            var task = new ProjectTask(ProjectTaskPriority.High) { Title = "Test Task", Description = "Description", DueDate = DateTime.UtcNow, Status = ProjectTaskStatus.Pending, ProjectId = project.Id };
+            _context.ProjectTask.Add(task);
+            _context.SaveChanges();
+        }
+
+        [Fact]
+        public async Task DeleteTask_ReturnsOk()
+        {
+            // Arrange
+            var taskId = _context.ProjectTask.First().Id;
+
+            var service = new ProjectService(_repository);
+            var controller = new ProjectController(service);
+
+            // Act
+            var result = await controller.DeleteTask(taskId);
+
+            // Assert
+            Assert.IsType<OkResult>(result);
+        }
+    }
 }

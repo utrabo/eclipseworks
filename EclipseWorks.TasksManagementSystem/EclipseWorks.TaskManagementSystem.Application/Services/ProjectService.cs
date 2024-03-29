@@ -33,9 +33,9 @@ public class ProjectService : IProjectService
         await _projectRepository.DeleteProjectAsync(projectId);
     }
 
-    public Task DeleteTaskAsync(int taskId)
+    public async Task DeleteTaskAsync(int taskId)
     {
-        throw new NotImplementedException();
+        await _projectRepository.DeleteTaskAsync(taskId);
     }
 
     public async Task<List<Project>> GetProjectsByUserIdAsync(int userId)
