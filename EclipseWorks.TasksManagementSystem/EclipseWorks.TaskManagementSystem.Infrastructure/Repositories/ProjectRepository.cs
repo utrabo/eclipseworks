@@ -13,6 +13,13 @@ public class ProjectRepository : IProjectRepository
         _context = context;
     }
 
+    public async Task<Project> CreateProjectAsync(Project project)
+    {
+        await _context.Project.AddAsync(project);
+        await _context.SaveChangesAsync();
+        return project;
+    }
+
     public async Task DeleteProjectAsync(int projectId)
     {
         var project = await _context.Project.FindAsync(projectId);

@@ -120,4 +120,36 @@ public class ProjectControllerIntegrationTests
             Assert.Equal("Project has pending tasks. Complete or remove the tasks first.", exception.Message);
         }
     }
+
+    [Collection("Sequential")]
+    public class ProjectController_CreateProject : IntegrationTestBase
+    {
+        protected override void SeedDatabase()
+        {
+            var user = new UserAccount { Name = "Test User" };
+            _context.UserAccount.Add(user);
+            _context.SaveChanges();
+        }
+
+        [Fact]
+        public async Task CreateProject_ReturnsProject()
+        {
+            // Arrange
+            var project = new Project { Name = "Test Project", UserAccountId = _context.UserAccount.First().Id };
+
+            var service = new ProjectService(_repository);
+            var controller = new ProjectController(service);
+
+            // Act
+            var result = await controller.CreateProject(project);
+
+            // Assert
+            var actionResult = Assert.IsType<OkObjectResult>(result.Result);
+
+            var createdProject = Assert.IsType<Project>(actionResult.Value);
+            Assert.Equal(project.Name, createdProject.Name);
+            Assert.Equal(project.UserAccountId, createdProject.UserAccountId);
+        }
+    }
+    
 }

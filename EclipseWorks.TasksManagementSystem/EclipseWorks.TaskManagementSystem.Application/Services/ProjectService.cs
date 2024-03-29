@@ -12,9 +12,9 @@ public class ProjectService : IProjectService
         _projectRepository = projectRepository;
     }
 
-    public Task<Project> CreateProjectAsync(Project project)
+    public async Task<Project> CreateProjectAsync(Project project)
     {
-        throw new NotImplementedException();
+        return await _projectRepository.CreateProjectAsync(project);
     }
 
     public Task<ProjectTask> CreateTaskAsync(ProjectTask projectTask)
