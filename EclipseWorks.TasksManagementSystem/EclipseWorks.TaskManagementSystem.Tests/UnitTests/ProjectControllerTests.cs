@@ -184,6 +184,8 @@ namespace EclipseWorks.TaskManagementSystem.Tests.UnitTests
             // Arrange
             var taskId = 1;
             var mockProjectService = new Mock<IProjectService>();
+            mockProjectService.Setup(service => service.GetTaskByIdAsync(It.IsAny<int>()))
+                              .ReturnsAsync(new ProjectTask(ProjectTaskPriority.Medium) { Id = 1, Title = "Task 1", Description = "Task 1", DueDate = DateTime.Now, Status = ProjectTaskStatus.Pending, ProjectId = 1 });
             mockProjectService.Setup(service => service.DeleteTaskAsync(It.IsAny<int>()))
                               .Returns(Task.CompletedTask);
 

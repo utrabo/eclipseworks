@@ -94,6 +94,10 @@ public class ProjectController : ControllerBase
     [HttpDelete("projects/{projectId}/tasks/{taskId}")]
     public async Task<ActionResult> DeleteTask(int taskId)
     {
+        var task = await _projectService.GetTaskByIdAsync(taskId);
+        if (task == null)
+            return NotFound("Task not found.");
+
         await _projectService.DeleteTaskAsync(taskId);
         return Ok();
     }
@@ -105,7 +109,10 @@ public class ProjectController : ControllerBase
         if (originalProject == null)
             return NotFound("Project not found.");
 
-        originalProject.Name = projectUpdateDto.Name ?? originalProject.Name;
+        if (string.IsNullOrWhiteSpace(projectUpdateDto.Name))
+            return BadRequest("Project name is required.");
+
+        originalProject.Name = projectUpdateDto.Name;
 
         var updatedProject = await _projectService.UpdateProjectAsync(originalProject);
         return Ok(updatedProject);
