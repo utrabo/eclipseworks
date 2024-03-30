@@ -66,7 +66,16 @@ public class ProjectRepository : IProjectRepository
             throw new InvalidOperationException("Task not found.");
         }
 
+        var comments = await _context.ProjectTaskComment.Where(comment => comment.ProjectTaskId == taskId).ToListAsync();
+        if (comments.Any())
+            _context.ProjectTaskComment.RemoveRange(comments);
+
+        var history = await _context.ProjectTaskHistory.Where(history => history.ProjectTaskId == taskId).ToListAsync();
+        if (history.Any())
+            _context.ProjectTaskHistory.RemoveRange(history);
+
         _context.ProjectTask.Remove(task);
+
         await _context.SaveChangesAsync();
     }
 
@@ -74,6 +83,11 @@ public class ProjectRepository : IProjectRepository
     {
         return await _context.ProjectTask
             .CountAsync(task => task.AssignedToUserAccountId == userId && task.Status == ProjectTaskStatus.Completed && task.CompletionDate >= fromDate);
+    }
+
+    public async Task<Project?> GetProjectByIdAsync(int projectId)
+    {
+        return await _context.Project.FindAsync(projectId);
     }
 
     public async Task<List<Project>> GetProjectsByUserIdAsync(int userId)
@@ -86,9 +100,29 @@ public class ProjectRepository : IProjectRepository
         return await _context.ProjectTask.AsNoTracking().FirstOrDefaultAsync(task => task.Id == taskId);
     }
 
+    public async Task<ProjectTask?> GetTaskByIdAsync(int taskId)
+    { 
+        return await _context.ProjectTask.FindAsync(taskId);
+    }
+
     public async Task<List<ProjectTask>> GetTasksByProjectIdAsync(int projectId)
     {
         return await _context.ProjectTask.Where(task => task.ProjectId == projectId).ToListAsync();
+    }
+
+    public async Task<Project> UpdateProjectAsync(Project project)
+    {
+        var originalProject = await _context.Project.FindAsync(project.Id);
+        if (originalProject == null)
+        {
+            throw new InvalidOperationException("Project not found.");
+        }
+
+        _context.Entry(originalProject).CurrentValues.SetValues(project);
+
+        await _context.SaveChangesAsync();
+
+        return originalProject;
     }
 
     public async Task<ProjectTask> UpdateTaskAsync(int userId, ProjectTask task)
@@ -102,9 +136,11 @@ public class ProjectRepository : IProjectRepository
         if (originalTask.Status != ProjectTaskStatus.Completed && task.Status == ProjectTaskStatus.Completed)
             task.CompletionDate = DateTime.UtcNow;
 
-        _context.ProjectTask.Update(task);
-
+        _context.ProjectTask.Attach(task);
+        _context.Entry(task).State = EntityState.Modified;
+        
         PrepareTaskUpdateHistoryAsync(originalTask, task, userId);
+
 
         await _context.SaveChangesAsync();
 

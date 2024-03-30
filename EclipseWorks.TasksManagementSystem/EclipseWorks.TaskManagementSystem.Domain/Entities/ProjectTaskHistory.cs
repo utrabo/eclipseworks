@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace EclipseWorks.TaskManagementSystem.Domain.Entities;
@@ -17,7 +18,10 @@ public class ProjectTaskHistory
     public int? ProjectTaskCommentId { get; set; }
 
     // Navigation properties
-    public ProjectTask ProjectTask { get; set; } = null!;
-    public UserAccount ChangedByUser { get; set; } = null!;
+    [JsonIgnore]
+    public ProjectTask? ProjectTask { get; set; } = null!;
+    [JsonIgnore]
+    public UserAccount? ChangedByUser { get; set; } = null!;
+    [JsonIgnore]
     public ProjectTaskComment? ProjectTaskComment { get; set; }
 }

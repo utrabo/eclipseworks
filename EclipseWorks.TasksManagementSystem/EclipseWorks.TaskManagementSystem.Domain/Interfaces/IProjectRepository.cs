@@ -9,8 +9,11 @@ public interface IProjectRepository
     Task DeleteProjectAsync(int projectId);
     Task DeleteTaskAsync(int taskId);
     Task<int> GetCompletedTasksByUserIdSinceAsync(int userId, DateTime fromDate);
+    Task<Project?> GetProjectByIdAsync(int projectId);
     Task<List<Project>> GetProjectsByUserIdAsync(int userId);
     Task<ProjectTask?> GetTaskByIdAsNoTrackingAsync(int taskId);
+    Task<ProjectTask?> GetTaskByIdAsync(int taskId);
     Task<List<ProjectTask>> GetTasksByProjectIdAsync(int projectId);
+    Task<Project> UpdateProjectAsync(Project project);
     Task<ProjectTask> UpdateTaskAsync(int userId, ProjectTask task);
 }

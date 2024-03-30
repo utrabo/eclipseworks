@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\EclipseWorks.TaskManagementSystem.Application\EclipseWorks.TaskManagementSystem.Application.csproj" />
     <ProjectReference Include="..\EclipseWorks.TaskManagementSystem.Domain\EclipseWorks.TaskManagementSystem.Domain.csproj" />
+    <ProjectReference Include="..\EclipseWorks.TaskManagementSystem.Infrastructure\EclipseWorks.TaskManagementSystem.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

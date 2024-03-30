@@ -1,7 +1,9 @@
 ﻿using EclipseWorks.TaskManagementSystem.API.Controllers;
+using EclipseWorks.TaskManagementSystem.API.Requests;
 using EclipseWorks.TaskManagementSystem.Application.Interfaces;
 using EclipseWorks.TaskManagementSystem.Application.Services;
 using EclipseWorks.TaskManagementSystem.Domain.Entities;
+using System.Threading.Tasks;
 
 namespace EclipseWorks.TaskManagementSystem.Tests.UnitTests
 {
@@ -82,7 +84,10 @@ namespace EclipseWorks.TaskManagementSystem.Tests.UnitTests
         {
             // Arrange
             var project = new Project { Id = 1, Name = "Project 1", UserAccountId = 1 };
+            var projectUpdateDto = new ProjectUpdateRequestDto { Name = "Project 1" };
             var mockProjectService = new Mock<IProjectService>();
+            mockProjectService.Setup(service => service.GetProjectByIdAsync(It.IsAny<int>()))
+                              .ReturnsAsync(project);
             mockProjectService.Setup(service => service.UpdateProjectAsync(It.IsAny<Project>()))
                               .ReturnsAsync(project);
 
@@ -90,7 +95,7 @@ namespace EclipseWorks.TaskManagementSystem.Tests.UnitTests
             var controller = new ProjectController(mockProjectService.Object, mockUserService.Object);
 
             // Act
-            var result = await controller.UpdateProject(project);
+            var result = await controller.UpdateProject(project.Id, projectUpdateDto);
 
             // Assert
             var actionResult = Assert.IsType<OkObjectResult>(result.Result);
@@ -133,7 +138,7 @@ namespace EclipseWorks.TaskManagementSystem.Tests.UnitTests
             var controller = new ProjectController(mockProjectService.Object, mockUserService.Object);
 
             // Act
-            var result = await controller.CreateTask(task);
+            var result = await controller.CreateTask(1, task);
 
             // Assert
             var actionResult = ((ObjectResult)result.Result!).Value;
@@ -149,8 +154,11 @@ namespace EclipseWorks.TaskManagementSystem.Tests.UnitTests
         public async Task UpdateTask_ReturnsTask()
         {
             // Arrange
-            var task = new ProjectTask(ProjectTaskPriority.Medium) { Title = "Task 1", Description = "Task 1", DueDate = DateTime.Now, Status = ProjectTaskStatus.Pending, ProjectId = 1 };
+            var task = new ProjectTask(ProjectTaskPriority.Medium) { Id = 1, Title = "Task 1", Description = "Task 1", DueDate = DateTime.Now, Status = ProjectTaskStatus.Pending, ProjectId = 1 };
+            var taskDto = new ProjectTaskUpdateRequestDto { Title = "Task 1", Description = "Task 1", DueDate = DateTime.Now, Status = ProjectTaskStatus.Pending };
             var mockProjectService = new Mock<IProjectService>();
+            mockProjectService.Setup(service => service.GetTaskByIdAsync(It.IsAny<int>()))
+                              .ReturnsAsync(task);
             mockProjectService.Setup(service => service.UpdateTaskAsync(It.IsAny<int>(), It.IsAny<ProjectTask>()))
                               .ReturnsAsync(task);
 
@@ -158,7 +166,7 @@ namespace EclipseWorks.TaskManagementSystem.Tests.UnitTests
             var controller = new ProjectController(mockProjectService.Object, mockUserService.Object);
 
             // Act
-            var result = await controller.UpdateTask(1, task);
+            var result = await controller.UpdateTask(1, 1, 1, taskDto);
 
             // Assert
             var actionResult = Assert.IsType<OkObjectResult>(result.Result);
@@ -194,15 +202,20 @@ namespace EclipseWorks.TaskManagementSystem.Tests.UnitTests
         {
             // Arrange
             var taskComment = new ProjectTaskComment { Id = 1, Comment = "Comment 1", ProjectTaskId = 1 };
+            var taskCommentDto = new ProjectTaskCommentAddRequestDto { Comment = "Comment 1" };
             var mockProjectService = new Mock<IProjectService>();
+            mockProjectService.Setup(service => service.GetTaskByIdAsync(It.IsAny<int>()))
+                              .ReturnsAsync(new ProjectTask(ProjectTaskPriority.Medium) { Id = 1, Title = "Task 1", Description = "Task 1", DueDate = DateTime.Now, Status = ProjectTaskStatus.Pending, ProjectId = 1 });
             mockProjectService.Setup(service => service.AddTaskCommentAsync(It.IsAny<ProjectTaskComment>()))
                               .ReturnsAsync(taskComment);
 
             var mockUserService = new Mock<IUserService>();
+            mockUserService.Setup(service => service.GetUserByIdAsync(It.IsAny<int>()))
+                          .ReturnsAsync(new UserAccount { Id = 1 });
             var controller = new ProjectController(mockProjectService.Object, mockUserService.Object);
 
             // Act
-            var result = await controller.AddTaskComment(taskComment);
+            var result = await controller.AddTaskComment(1, taskCommentDto);
 
             // Assert
             var actionResult = ((ObjectResult)result.Result!).Value;

@@ -1,4 +1,5 @@
 ﻿using EclipseWorks.TaskManagementSystem.API.Controllers;
+using EclipseWorks.TaskManagementSystem.API.Requests;
 using EclipseWorks.TaskManagementSystem.Application.Services;
 using EclipseWorks.TaskManagementSystem.Domain.Entities;
 
@@ -27,7 +28,7 @@ public class ProjectControllerIntegrationTests
         public async Task GetProjects_ForUser_ReturnsProjectList()
         {
             // Arrange
-            var userId = _context.UserAccount.First().Id;
+            var userId = _context.UserAccount.OrderByDescending(t => t.Id).First().Id;
 
             var projService = new ProjectService(_projectRepository, _userRepository);
             var userService = new UserService(_userRepository);
@@ -72,7 +73,7 @@ public class ProjectControllerIntegrationTests
         public async Task GetTasks_ByProjectId_ReturnsTaskList()
         {
             // Arrange
-            var projectId = _context.Project.First().Id;
+            var projectId = _context.Project.OrderByDescending(t => t.Id).First().Id;
 
             var projService = new ProjectService(_projectRepository, _userRepository);
             var userService = new UserService(_userRepository);
@@ -112,7 +113,7 @@ public class ProjectControllerIntegrationTests
         public async Task DeleteProject_WhenProjectHasPendingTasks_ShouldNotAllowDeletion()
         {
             // Arrange
-            var projectId = _context.Project.First().Id;
+            var projectId = _context.Project.OrderByDescending(t => t.Id).First().Id;
 
             var projService = new ProjectService(_projectRepository, _userRepository);
             var userService = new UserService(_userRepository);
@@ -157,6 +158,42 @@ public class ProjectControllerIntegrationTests
     }
 
     [Collection("Sequential")]
+    public class ProjectController_UpdateProject : IntegrationTestBase
+    {
+        protected override void SeedDatabase()
+        {
+            var user = new UserAccount { Name = "Test User" };
+            _context.UserAccount.Add(user);
+            _context.SaveChanges();
+
+            var project = new Project { Name = "Test Project", UserAccountId = user.Id };
+            _context.Project.Add(project);
+            _context.SaveChanges();
+        }
+
+        [Fact]
+        public async Task UpdateProject_ReturnsProject()
+        {
+            // Arrange
+            var project = _context.Project.OrderByDescending(t=> t.Id).First();
+            var projectUpdateDto = new ProjectUpdateRequestDto { Name = "Updated Project" };
+
+            var projService = new ProjectService(_projectRepository, _userRepository);
+            var userService = new UserService(_userRepository);
+            var controller = new ProjectController(projService, userService);
+
+            // Act
+            var result = await controller.UpdateProject(project.Id, projectUpdateDto);
+
+            // Assert
+            var actionResult = Assert.IsType<OkObjectResult>(result.Result);
+
+            var updatedProject = Assert.IsType<Project>(actionResult.Value);
+            Assert.Equal(project.Name, updatedProject.Name);
+        }
+    }
+
+    [Collection("Sequential")]
     public class ProjectController_CreateTask : IntegrationTestBase
     {
         protected override void SeedDatabase()
@@ -175,14 +212,15 @@ public class ProjectControllerIntegrationTests
         {
             // Arrange
             var user = _context.UserAccount.First();
-            var task = new ProjectTask(ProjectTaskPriority.Medium) { Title = "Test Task", Description = "Description", DueDate = DateTime.UtcNow, Status = ProjectTaskStatus.Pending, ProjectId = _context.Project.First().Id, AssignedToUserAccount = user };
+            var project = _context.Project.OrderByDescending(t => t.Id).First();
+            var task = new ProjectTask(ProjectTaskPriority.Medium) { Title = "Test Task", Description = "Description", DueDate = DateTime.UtcNow, Status = ProjectTaskStatus.Pending, ProjectId = project.Id, AssignedToUserAccount = user };
 
             var projService = new ProjectService(_projectRepository, _userRepository);
             var userService = new UserService(_userRepository);
             var controller = new ProjectController(projService, userService);
 
             // Act
-            var result = await controller.CreateTask(task);
+            var result = await controller.CreateTask(project.Id, task);
 
             // Assert
             var actionResult = Assert.IsType<OkObjectResult>(result.Result);
@@ -218,17 +256,25 @@ public class ProjectControllerIntegrationTests
         public async Task UpdateTask_ReturnsTask()
         {
             // Arrange
-            var task = _context.ProjectTask.First();
-            task.Title = "Updated Task";
+            var project = _context.Project.OrderByDescending(t => t.Id).First();
+            var task = _context.ProjectTask.OrderByDescending(t => t.Id).First();
 
-            var user = _context.UserAccount.First();
+            var taskUpdateDto = new ProjectTaskUpdateRequestDto
+            {
+                Title = "Updated Task",
+                Description = "Updated Description",
+                DueDate = DateTime.UtcNow.AddDays(1),
+                Status = ProjectTaskStatus.Completed
+            };
+
+            var user = _context.UserAccount.OrderByDescending(t => t.Id).First();
 
             var projService = new ProjectService(_projectRepository, _userRepository);
             var userService = new UserService(_userRepository);
             var controller = new ProjectController(projService, userService);
 
             // Act
-            var result = await controller.UpdateTask(user.Id, task);
+            var result = await controller.UpdateTask(user.Id, project.Id, task.Id, taskUpdateDto);
 
             // Assert
             var actionResult = Assert.IsType<OkObjectResult>(result.Result);
@@ -306,15 +352,18 @@ public class ProjectControllerIntegrationTests
         public async Task AddTaskComment_ReturnsTaskComment()
         {
             // Arrange
-            var user = _context.UserAccount.First();
-            var taskComment = new ProjectTaskComment { Comment = "Test Comment", ProjectTaskId = _context.ProjectTask.First().Id, SentAt = DateTime.UtcNow, UserAccount = user };
+            var user = _context.UserAccount.OrderByDescending(t => t.Id).First();
+            var task = _context.ProjectTask.OrderByDescending(t => t.Id).First();
+
+            var taskComment = new ProjectTaskComment { Comment = "Test Comment", ProjectTaskId = task.Id, SentAt = DateTime.UtcNow, UserAccount = user };
+            var taskCommentDto = new ProjectTaskCommentAddRequestDto { Comment = "Test Comment", UserId = user.Id };
 
             var projService = new ProjectService(_projectRepository, _userRepository);
             var userService = new UserService(_userRepository);
             var controller = new ProjectController(projService, userService);
 
             // Act
-            var result = await controller.AddTaskComment(taskComment);
+            var result = await controller.AddTaskComment(task.Id, taskCommentDto);
 
             // Assert
             var actionResult = Assert.IsType<OkObjectResult>(result.Result);

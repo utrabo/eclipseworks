@@ -1,4 +1,6 @@
-﻿namespace EclipseWorks.TaskManagementSystem.Domain.Entities;
+﻿using System.Text.Json.Serialization;
+
+namespace EclipseWorks.TaskManagementSystem.Domain.Entities;
 public class ProjectTask
 {
     public int Id { get; set; }
@@ -17,9 +19,13 @@ public class ProjectTask
     }
 
     // Navigation properties
-    public Project Project { get; set; } = null!;
-    public UserAccount AssignedToUserAccount { get; set; } = null!;
+    [JsonIgnore] 
+    public Project? Project { get; set; } = null!;
+    [JsonIgnore] 
+    public UserAccount? AssignedToUserAccount { get; set; } = null!;
+    [JsonIgnore] 
     public List<ProjectTaskComment> ProjectTaskComment { get; set; } = new List<ProjectTaskComment>();
+    [JsonIgnore] 
     public List<ProjectTaskHistory> ProjectTaskHistory { get; set; } = new List<ProjectTaskHistory>();
 
 }

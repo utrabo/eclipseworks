@@ -57,9 +57,9 @@ public class ProjectService : IProjectService
         return await _projectRepository.GetTasksByProjectIdAsync(projectId);
     }
 
-    public Task<Project> UpdateProjectAsync(Project project)
+    public async Task<Project> UpdateProjectAsync(Project project)
     {
-        throw new NotImplementedException();
+        return await _projectRepository.UpdateProjectAsync(project);
     }
 
     public async Task<ProjectTask> UpdateTaskAsync(int userId, ProjectTask task)
@@ -84,5 +84,17 @@ public class ProjectService : IProjectService
         var fromDate = DateTime.UtcNow.AddDays(-30);
         var completedTasks = await _projectRepository.GetCompletedTasksByUserIdSinceAsync(userId, fromDate);
         return completedTasks;
+    }
+
+    public async Task<ProjectTask?> GetTaskByIdAsync(int taskId)
+    { 
+        var task = await _projectRepository.GetTaskByIdAsync(taskId);
+        return task;
+    }
+
+    public async Task<Project?> GetProjectByIdAsync(int projectId)
+    {
+        var project = await _projectRepository.GetProjectByIdAsync(projectId);
+        return project;
     }
 }
