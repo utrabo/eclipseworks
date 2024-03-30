@@ -50,9 +50,9 @@ public class ProjectController : ControllerBase
     }
 
     [HttpPut("projects/{projectId}/tasks/{taskId}")]
-    public async Task<ActionResult<ProjectTask>> UpdateTask(ProjectTask task)
+    public async Task<ActionResult<ProjectTask>> UpdateTask(int userId, ProjectTask task)
     {
-        var updatedTask = await _projectService.UpdateTaskAsync(task);
+        var updatedTask = await _projectService.UpdateTaskAsync(userId, task);
         return Ok(updatedTask);
     }
 

@@ -33,4 +33,21 @@ public class ProjectServiceTests
         Assert.Equal("Project has pending tasks. Complete or remove the tasks first.", exception.Message);
     }
 
+    [Fact]
+    public async Task CreateTaskAsync_WithMoreThan20Tasks_ThrowsException()
+    {
+        // Arrange
+        var projectId = 1;
+        var mockProjectRepository = new Mock<IProjectRepository>();
+        mockProjectRepository.Setup(repo => repo.GetTasksByProjectIdAsync(projectId))
+                             .ReturnsAsync(Enumerable.Range(1, 20).Select(i => new ProjectTask(ProjectTaskPriority.Low) { Title = $"Task {i}", Description = $"Task {i}", DueDate = DateTime.Now, Status = ProjectTaskStatus.Pending, ProjectId = projectId }).ToList());
+
+        var service = new ProjectService(mockProjectRepository.Object);
+
+        // Act
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => service.CreateTaskAsync(new ProjectTask(ProjectTaskPriority.Low) { Title = "Task 21", Description = "Task 21", DueDate = DateTime.Now, Status = ProjectTaskStatus.Pending, ProjectId = projectId }));
+
+        // Assert
+        Assert.Equal("Project has reached the maximum number of tasks.", exception.Message);
+    }
 }

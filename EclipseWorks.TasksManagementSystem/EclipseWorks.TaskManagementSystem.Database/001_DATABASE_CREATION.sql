@@ -8,7 +8,7 @@ GO
 CREATE TABLE UserAccount (
     Id INT IDENTITY(1,1) PRIMARY KEY,
     Name NVARCHAR(255) NOT NULL,
-	Role TINYINT NOT NULL CHECK (Role IN (1,2)) -- 1: User, 2: Manager
+	Role INT NOT NULL CHECK (Role IN (1,2)) -- 1: User, 2: Manager
 );
 
 CREATE TABLE Project (
@@ -24,8 +24,8 @@ CREATE TABLE ProjectTask (
     Title NVARCHAR(255) NOT NULL,
     Description NVARCHAR(MAX) NULL,
     DueDate DATETIME NULL,
-    Status TINYINT NOT NULL CHECK (Status IN (1, 2, 3)), -- 1: Pending, 2: In Progress, 3: Done
-	Priority TINYINT NOT NULL CHECK (Priority IN (1, 2, 3)), -- 1: Low, 2: Medium, 3: High
+    Status INT NOT NULL CHECK (Status IN (1, 2, 3)), -- 1: Pending, 2: In Progress, 3: Done
+	Priority INT NOT NULL CHECK (Priority IN (1, 2, 3)), -- 1: Low, 2: Medium, 3: High
     CONSTRAINT FK_Task_Project FOREIGN KEY (ProjectId) REFERENCES Project(Id)
 );
 
@@ -61,3 +61,13 @@ CREATE INDEX IDX_ProjectTaskComment_UserAccount ON ProjectTaskComment(UserAccoun
 CREATE INDEX IDX_ProjectTaskHistory_ProjectTaskId ON ProjectTaskHistory(ProjectTaskId);
 CREATE INDEX IDX_ProjectTaskHistory_ChangedByUserId ON ProjectTaskHistory(ChangedByUserId);
 CREATE INDEX IDX_ProjectTaskHistory_ProjectTaskCommentId ON ProjectTaskHistory(ProjectTaskCommentId);
+go
+
+ALTER TABLE ProjectTaskHistory ALTER COLUMN PropertyName NVARCHAR(MAX) NULL
+GO
+
+ALTER TABLE ProjectTaskHistory ALTER COLUMN OriginalValue NVARCHAR(MAX) NULL;
+GO
+
+ALTER TABLE ProjectTaskHistory ALTER COLUMN CurrentValue NVARCHAR(MAX) NULL;
+GO

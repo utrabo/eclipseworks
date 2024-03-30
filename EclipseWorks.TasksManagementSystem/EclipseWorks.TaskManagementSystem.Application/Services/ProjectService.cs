@@ -1,4 +1,5 @@
 ﻿using EclipseWorks.TaskManagementSystem.Application.Interfaces;
+using EclipseWorks.TaskManagementSystem.Domain;
 using EclipseWorks.TaskManagementSystem.Domain.Entities;
 using EclipseWorks.TaskManagementSystem.Domain.Interfaces;
 
@@ -19,6 +20,12 @@ public class ProjectService : IProjectService
 
     public async Task<ProjectTask> CreateTaskAsync(ProjectTask projectTask)
     {
+        var tasks = await _projectRepository.GetTasksByProjectIdAsync(projectTask.ProjectId);
+        if (tasks.Count >= Constant.MaxTasksPerProject)
+        {
+            throw new InvalidOperationException("Project has reached the maximum number of tasks.");
+        }
+
         return await _projectRepository.CreateTaskAsync(projectTask);
     }
 
@@ -53,13 +60,13 @@ public class ProjectService : IProjectService
         throw new NotImplementedException();
     }
 
-    public async Task<ProjectTask> UpdateTaskAsync(ProjectTask task)
+    public async Task<ProjectTask> UpdateTaskAsync(int userId, ProjectTask task)
     {
-        return await _projectRepository.UpdateTaskAsync(task);
+        return await _projectRepository.UpdateTaskAsync(userId, task);
     }
 
-    public Task<ProjectTaskComment> AddTaskCommentAsync(ProjectTaskComment projectTaskComment)
+    public async Task<ProjectTaskComment> AddTaskCommentAsync(ProjectTaskComment projectTaskComment)
     {
-        throw new NotImplementedException();
+        return await _projectRepository.AddTaskCommentAsync(projectTaskComment);
     }
 }

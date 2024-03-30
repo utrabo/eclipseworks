@@ -13,6 +13,25 @@ public class ProjectRepository : IProjectRepository
         _context = context;
     }
 
+    public async Task<ProjectTaskComment> AddTaskCommentAsync(ProjectTaskComment projectTaskComment)
+    {
+        _context.ProjectTaskComment.Add(projectTaskComment);
+
+        var history = new ProjectTaskHistory
+        {
+            ProjectTaskComment = projectTaskComment,
+            ProjectTaskId = projectTaskComment.ProjectTaskId,
+            ChangedAt = DateTime.UtcNow,
+            ChangedByUserId = projectTaskComment.UserAccountId,
+        };
+
+        _context.ProjectTaskHistory.Add(history);
+
+        await _context.SaveChangesAsync();
+
+        return projectTaskComment;
+    }
+
     public async Task<Project> CreateProjectAsync(Project project)
     {
         await _context.Project.AddAsync(project);
@@ -56,15 +75,68 @@ public class ProjectRepository : IProjectRepository
         return await _context.Project.Where(project => project.UserAccountId == userId).ToListAsync();
     }
 
+    public async Task<ProjectTask?> GetTaskByIdAsNoTrackingAsync(int taskId)
+    {
+        return await _context.ProjectTask.AsNoTracking().FirstOrDefaultAsync(task => task.Id == taskId);
+    }
+
     public async Task<List<ProjectTask>> GetTasksByProjectIdAsync(int projectId)
     {
         return await _context.ProjectTask.Where(task => task.ProjectId == projectId).ToListAsync();
     }
 
-    public async Task<ProjectTask> UpdateTaskAsync(ProjectTask task)
+    public async Task<ProjectTask> UpdateTaskAsync(int userId, ProjectTask task)
     {
+        var originalTask = await GetTaskByIdAsNoTrackingAsync(task.Id);
+        if (originalTask == null)
+        {
+            throw new InvalidOperationException("Task not found.");
+        }
+
         _context.ProjectTask.Update(task);
+
+        PrepareTaskUpdateHistoryAsync(originalTask, task, userId);
+
         await _context.SaveChangesAsync();
+
         return task;
     }
+
+    private void PrepareTaskUpdateHistoryAsync(ProjectTask originalTask, ProjectTask updatedTask, int changedByUserId)
+    {
+        var propertiesToExclude = new HashSet<string>
+    {
+        "Id",
+        "ProjectId",
+        "Priority",
+        "Project",
+        "ProjectTaskComment",
+        "ProjectTaskHistory"
+    };
+
+        var properties = typeof(ProjectTask).GetProperties()
+            .Where(prop => !propertiesToExclude.Contains(prop.Name) && prop.PropertyType.IsPrimitive ||
+                           prop.PropertyType == typeof(string) ||
+                           prop.PropertyType == typeof(DateTime));
+
+        foreach (var property in properties)
+        {
+            var originalValue = property.GetValue(originalTask)?.ToString();
+            var currentValue = property.GetValue(updatedTask)?.ToString();
+
+            if (originalValue != currentValue)
+            {
+                _context.ProjectTaskHistory.Add(new ProjectTaskHistory
+                {
+                    ProjectTaskId = originalTask.Id,
+                    PropertyName = property.Name,
+                    OriginalValue = originalValue ?? string.Empty,
+                    CurrentValue = currentValue ?? string.Empty,
+                    ChangedAt = DateTime.UtcNow,
+                    ChangedByUserId = changedByUserId
+                });
+            }
+        }
+    }
+
 }

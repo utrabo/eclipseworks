@@ -144,13 +144,13 @@ namespace EclipseWorks.TaskManagementSystem.Tests.UnitTests
             // Arrange
             var task = new ProjectTask(ProjectTaskPriority.Medium) { Title = "Task 1", Description = "Task 1", DueDate = DateTime.Now, Status = ProjectTaskStatus.Pending, ProjectId = 1 };
             var mockProjectService = new Mock<IProjectService>();
-            mockProjectService.Setup(service => service.UpdateTaskAsync(It.IsAny<ProjectTask>()))
+            mockProjectService.Setup(service => service.UpdateTaskAsync(It.IsAny<int>(), It.IsAny<ProjectTask>()))
                               .ReturnsAsync(task);
 
             var controller = new ProjectController(mockProjectService.Object);
 
             // Act
-            var result = await controller.UpdateTask(task);
+            var result = await controller.UpdateTask(1, task);
 
             // Assert
             var actionResult = Assert.IsType<OkObjectResult>(result.Result);

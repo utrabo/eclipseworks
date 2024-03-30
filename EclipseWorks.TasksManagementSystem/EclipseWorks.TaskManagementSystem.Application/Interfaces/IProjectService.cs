@@ -11,5 +11,5 @@ public interface IProjectService
     Task<List<Project>> GetProjectsByUserIdAsync(int userId);
     Task<List<ProjectTask>> GetTasksByProjectIdAsync(int projectId);
     Task<Project> UpdateProjectAsync(Project project);
-    Task<ProjectTask> UpdateTaskAsync(ProjectTask task);
+    Task<ProjectTask> UpdateTaskAsync(int userId, ProjectTask task);
 }

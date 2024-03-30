@@ -215,11 +215,13 @@ public class ProjectControllerIntegrationTests
             var task = _context.ProjectTask.First();
             task.Title = "Updated Task";
 
+            var user = _context.UserAccount.First();
+
             var service = new ProjectService(_repository);
             var controller = new ProjectController(service);
 
             // Act
-            var result = await controller.UpdateTask(task);
+            var result = await controller.UpdateTask(user.Id, task);
 
             // Assert
             var actionResult = Assert.IsType<OkObjectResult>(result.Result);
@@ -230,6 +232,12 @@ public class ProjectControllerIntegrationTests
             Assert.Equal(task.DueDate, updatedTask.DueDate);
             Assert.Equal(task.Status, updatedTask.Status);
             Assert.Equal(task.ProjectId, updatedTask.ProjectId);
+
+            var history = _context.ProjectTaskHistory.FirstOrDefault(h => h.ProjectTaskId == task.Id);
+            Assert.NotNull(history);
+            Assert.Equal("Title", history.PropertyName);
+            Assert.Equal("Test Task", history.OriginalValue);
+            Assert.Equal("Updated Task", history.CurrentValue);
         }
     }
 
@@ -267,4 +275,48 @@ public class ProjectControllerIntegrationTests
             Assert.IsType<OkResult>(result);
         }
     }
+
+    [Collection("Sequential")]
+    public class ProjectController_AddTaskComment : IntegrationTestBase
+    {
+        protected override void SeedDatabase()
+        {
+            var user = new UserAccount { Name = "Test User" };
+            _context.UserAccount.Add(user);
+            _context.SaveChanges();
+
+            var project = new Project { Name = "Test Project", UserAccountId = user.Id };
+            _context.Project.Add(project);
+            _context.SaveChanges();
+
+            var task = new ProjectTask(ProjectTaskPriority.High) { Title = "Test Task", Description = "Description", DueDate = DateTime.UtcNow, Status = ProjectTaskStatus.Pending, ProjectId = project.Id };
+            _context.ProjectTask.Add(task);
+            _context.SaveChanges();
+        }
+
+        [Fact]
+        public async Task AddTaskComment_ReturnsTaskComment()
+        {
+            // Arrange
+            var user = _context.UserAccount.First();
+            var taskComment = new ProjectTaskComment { Comment = "Test Comment", ProjectTaskId = _context.ProjectTask.First().Id, SentAt = DateTime.UtcNow, UserAccount = user };
+
+            var service = new ProjectService(_repository);
+            var controller = new ProjectController(service);
+
+            // Act
+            var result = await controller.AddTaskComment(taskComment);
+
+            // Assert
+            var actionResult = Assert.IsType<OkObjectResult>(result.Result);
+
+            var createdComment = Assert.IsType<ProjectTaskComment>(actionResult.Value);
+            Assert.Equal(taskComment.Comment, createdComment.Comment);
+            Assert.Equal(taskComment.ProjectTaskId, createdComment.ProjectTaskId);
+
+            var history = _context.ProjectTaskHistory.FirstOrDefault(h => h.ProjectTaskCommentId == createdComment.Id);
+            Assert.NotNull(history);
+        }
+    }
+
 }
