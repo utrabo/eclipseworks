@@ -316,14 +316,15 @@ public class ProjectControllerIntegrationTests
         public async Task DeleteTask_ReturnsOk()
         {
             // Arrange
-            var taskId = _context.ProjectTask.First().Id;
+            var taskId = _context.ProjectTask.OrderByDescending(t=> t.Id).First().Id;
+            var project = _context.Project.OrderByDescending(t => t.Id).First();
 
             var projService = new ProjectService(_projectRepository, _userRepository);
             var userService = new UserService(_userRepository);
             var controller = new ProjectController(projService, userService);
 
             // Act
-            var result = await controller.DeleteTask(taskId);
+            var result = await controller.DeleteTask(project.Id, taskId);
 
             // Assert
             Assert.IsType<OkResult>(result);

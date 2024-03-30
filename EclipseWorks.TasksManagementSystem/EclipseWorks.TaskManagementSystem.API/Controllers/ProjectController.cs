@@ -92,11 +92,14 @@ public class ProjectController : ControllerBase
     }
 
     [HttpDelete("projects/{projectId}/tasks/{taskId}")]
-    public async Task<ActionResult> DeleteTask(int taskId)
+    public async Task<ActionResult> DeleteTask(int projectId, int taskId)
     {
         var task = await _projectService.GetTaskByIdAsync(taskId);
         if (task == null)
             return NotFound("Task not found.");
+
+        if (task.ProjectId != projectId)
+            return BadRequest("Mismatch between route project ID and task project ID.");
 
         await _projectService.DeleteTaskAsync(taskId);
         return Ok();

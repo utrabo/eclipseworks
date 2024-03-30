@@ -193,7 +193,7 @@ namespace EclipseWorks.TaskManagementSystem.Tests.UnitTests
             var controller = new ProjectController(mockProjectService.Object, mockUserService.Object);
 
             // Act
-            var result = await controller.DeleteTask(taskId);
+            var result = await controller.DeleteTask(1, taskId);
 
             // Assert
             var actionResult = Assert.IsType<OkResult>(result);
