@@ -1,5 +1,6 @@
 ﻿using EclipseWorks.TaskManagementSystem.API.Controllers;
 using EclipseWorks.TaskManagementSystem.Application.Interfaces;
+using EclipseWorks.TaskManagementSystem.Application.Services;
 using EclipseWorks.TaskManagementSystem.Domain.Entities;
 
 namespace EclipseWorks.TaskManagementSystem.Tests.UnitTests
@@ -15,7 +16,8 @@ namespace EclipseWorks.TaskManagementSystem.Tests.UnitTests
             mockProjectService.Setup(service => service.GetProjectsByUserIdAsync(It.IsAny<int>()))
                               .ReturnsAsync(GetTestProjects());
 
-            var controller = new ProjectController(mockProjectService.Object);
+            var mockUserService = new Mock<IUserService>();
+            var controller = new ProjectController(mockProjectService.Object, mockUserService.Object);
 
             // Act
             var result = await controller.GetProjects(userId);
@@ -37,7 +39,8 @@ namespace EclipseWorks.TaskManagementSystem.Tests.UnitTests
             mockProjectTaskService.Setup(service => service.GetTasksByProjectIdAsync(It.IsAny<int>()))
                                   .ReturnsAsync(GetTestTasks());
 
-            var controller = new ProjectController(mockProjectTaskService.Object);
+            var mockUserService = new Mock<IUserService>();
+            var controller = new ProjectController(mockProjectTaskService.Object, mockUserService.Object);
 
             // Act
             var result = await controller.GetTasks(projectId);
@@ -59,7 +62,8 @@ namespace EclipseWorks.TaskManagementSystem.Tests.UnitTests
             mockProjectService.Setup(service => service.CreateProjectAsync(It.IsAny<Project>()))
                               .ReturnsAsync(project);
 
-            var controller = new ProjectController(mockProjectService.Object);
+            var mockUserService = new Mock<IUserService>();
+            var controller = new ProjectController(mockProjectService.Object, mockUserService.Object);
 
             // Act
             var result = await controller.CreateProject(project);
@@ -82,7 +86,8 @@ namespace EclipseWorks.TaskManagementSystem.Tests.UnitTests
             mockProjectService.Setup(service => service.UpdateProjectAsync(It.IsAny<Project>()))
                               .ReturnsAsync(project);
 
-            var controller = new ProjectController(mockProjectService.Object);
+            var mockUserService = new Mock<IUserService>();
+            var controller = new ProjectController(mockProjectService.Object, mockUserService.Object);
 
             // Act
             var result = await controller.UpdateProject(project);
@@ -105,7 +110,8 @@ namespace EclipseWorks.TaskManagementSystem.Tests.UnitTests
             mockProjectService.Setup(service => service.DeleteProjectAsync(It.IsAny<int>()))
                               .Returns(Task.CompletedTask);
 
-            var controller = new ProjectController(mockProjectService.Object);
+            var mockUserService = new Mock<IUserService>();
+            var controller = new ProjectController(mockProjectService.Object, mockUserService.Object);
 
             // Act
             var result = await controller.DeleteProject(projectId);
@@ -123,7 +129,8 @@ namespace EclipseWorks.TaskManagementSystem.Tests.UnitTests
             mockProjectService.Setup(service => service.CreateTaskAsync(It.IsAny<ProjectTask>()))
                               .ReturnsAsync(task);
 
-            var controller = new ProjectController(mockProjectService.Object);
+            var mockUserService = new Mock<IUserService>();
+            var controller = new ProjectController(mockProjectService.Object, mockUserService.Object);
 
             // Act
             var result = await controller.CreateTask(task);
@@ -147,7 +154,8 @@ namespace EclipseWorks.TaskManagementSystem.Tests.UnitTests
             mockProjectService.Setup(service => service.UpdateTaskAsync(It.IsAny<int>(), It.IsAny<ProjectTask>()))
                               .ReturnsAsync(task);
 
-            var controller = new ProjectController(mockProjectService.Object);
+            var mockUserService = new Mock<IUserService>();
+            var controller = new ProjectController(mockProjectService.Object, mockUserService.Object);
 
             // Act
             var result = await controller.UpdateTask(1, task);
@@ -171,7 +179,8 @@ namespace EclipseWorks.TaskManagementSystem.Tests.UnitTests
             mockProjectService.Setup(service => service.DeleteTaskAsync(It.IsAny<int>()))
                               .Returns(Task.CompletedTask);
 
-            var controller = new ProjectController(mockProjectService.Object);
+            var mockUserService = new Mock<IUserService>();
+            var controller = new ProjectController(mockProjectService.Object, mockUserService.Object);
 
             // Act
             var result = await controller.DeleteTask(taskId);
@@ -189,7 +198,8 @@ namespace EclipseWorks.TaskManagementSystem.Tests.UnitTests
             mockProjectService.Setup(service => service.AddTaskCommentAsync(It.IsAny<ProjectTaskComment>()))
                               .ReturnsAsync(taskComment);
 
-            var controller = new ProjectController(mockProjectService.Object);
+            var mockUserService = new Mock<IUserService>();
+            var controller = new ProjectController(mockProjectService.Object, mockUserService.Object);
 
             // Act
             var result = await controller.AddTaskComment(taskComment);
@@ -201,6 +211,33 @@ namespace EclipseWorks.TaskManagementSystem.Tests.UnitTests
             Assert.Equal(taskComment.Id, addedTaskComment.Id);
             Assert.Equal(taskComment.Comment, addedTaskComment.Comment);
             Assert.Equal(taskComment.ProjectTaskId, addedTaskComment.ProjectTaskId);
+        }
+
+        [Fact]
+        public async Task GetCompletedTasksPerUserLast30Days_ReturnsInt()
+        {
+            // Arrange
+            var managerUserId = 1;
+            var userId = 2;
+            var completedTasks = 10;
+            var mockProjectService = new Mock<IProjectService>();
+            mockProjectService.Setup(service => service.GetCompletedTasksPerUserLast30Days(It.IsAny<int>(), It.IsAny<int>()))
+                              .ReturnsAsync(completedTasks);
+
+            var mockUserService = new Mock<IUserService>();
+            mockUserService.Setup(service => service.GetUserByIdAsync(managerUserId))
+                          .ReturnsAsync(new UserAccount { Id = managerUserId, Role = UserAccountRole.Manager });
+
+            var controller = new ProjectController(mockProjectService.Object, mockUserService.Object);
+
+            // Act
+            var result = await controller.GetCompletedTasksPerUserLast30Days(managerUserId, userId);
+
+            // Assert
+            var actionResult = Assert.IsType<OkObjectResult>(result.Result);
+
+            var completedTasksCount = Assert.IsType<int>(actionResult.Value);
+            Assert.Equal(completedTasks, completedTasksCount);
         }
 
         private List<Project> GetTestProjects()

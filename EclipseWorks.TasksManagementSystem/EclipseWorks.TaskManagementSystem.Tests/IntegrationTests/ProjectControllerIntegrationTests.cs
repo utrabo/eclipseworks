@@ -29,8 +29,9 @@ public class ProjectControllerIntegrationTests
             // Arrange
             var userId = _context.UserAccount.First().Id;
 
-            var service = new ProjectService(_repository);
-            var controller = new ProjectController(service);
+            var projService = new ProjectService(_projectRepository, _userRepository);
+            var userService = new UserService(_userRepository);
+            var controller = new ProjectController(projService, userService);
 
             // Act
             var result = await controller.GetProjects(userId);
@@ -58,11 +59,11 @@ public class ProjectControllerIntegrationTests
             _context.Project.Add(project);
             _context.SaveChanges();
 
-            var task1 = new ProjectTask(ProjectTaskPriority.High) { Title = "Test Task 1", Description = "Description", DueDate = DateTime.UtcNow, Status = ProjectTaskStatus.Pending, ProjectId = project.Id };
+            var task1 = new ProjectTask(ProjectTaskPriority.High) { Title = "Test Task 1", Description = "Description", DueDate = DateTime.UtcNow, Status = ProjectTaskStatus.Pending, ProjectId = project.Id, AssignedToUserAccount = user };
             _context.ProjectTask.Add(task1);
             _context.SaveChanges();
 
-            var task2 = new ProjectTask(ProjectTaskPriority.High) { Title = "Test Task 2", Description = "Description", DueDate = DateTime.UtcNow, Status = ProjectTaskStatus.Pending, ProjectId = project.Id };
+            var task2 = new ProjectTask(ProjectTaskPriority.High) { Title = "Test Task 2", Description = "Description", DueDate = DateTime.UtcNow, Status = ProjectTaskStatus.Pending, ProjectId = project.Id , AssignedToUserAccount = user };
             _context.ProjectTask.Add(task2);
             _context.SaveChanges();
         }
@@ -73,8 +74,9 @@ public class ProjectControllerIntegrationTests
             // Arrange
             var projectId = _context.Project.First().Id;
 
-            var service = new ProjectService(_repository);
-            var controller = new ProjectController(service);
+            var projService = new ProjectService(_projectRepository, _userRepository);
+            var userService = new UserService(_userRepository);
+            var controller = new ProjectController(projService, userService);
 
             // Act
             var result = await controller.GetTasks(projectId);
@@ -101,7 +103,7 @@ public class ProjectControllerIntegrationTests
             _context.Project.Add(project);
             _context.SaveChanges();
 
-            var task = new ProjectTask(ProjectTaskPriority.High) { Title = "Test Task", Description = "Description", DueDate = DateTime.UtcNow, Status = ProjectTaskStatus.Pending, ProjectId = project.Id };
+            var task = new ProjectTask(ProjectTaskPriority.High) { Title = "Test Task", Description = "Description", DueDate = DateTime.UtcNow, Status = ProjectTaskStatus.Pending, ProjectId = project.Id , AssignedToUserAccount = user };
             _context.ProjectTask.Add(task);
             _context.SaveChanges();
         }
@@ -112,11 +114,12 @@ public class ProjectControllerIntegrationTests
             // Arrange
             var projectId = _context.Project.First().Id;
 
-            var service = new ProjectService(_repository);
-            var controller = new ProjectController(service);
+            var projService = new ProjectService(_projectRepository, _userRepository);
+            var userService = new UserService(_userRepository);
+            var controller = new ProjectController(projService, userService);
 
             // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => service.DeleteProjectAsync(projectId));
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => projService.DeleteProjectAsync(projectId));
             Assert.Equal("Project has pending tasks. Complete or remove the tasks first.", exception.Message);
         }
     }
@@ -137,8 +140,9 @@ public class ProjectControllerIntegrationTests
             // Arrange
             var project = new Project { Name = "Test Project", UserAccountId = _context.UserAccount.First().Id };
 
-            var service = new ProjectService(_repository);
-            var controller = new ProjectController(service);
+            var projService = new ProjectService(_projectRepository, _userRepository);
+            var userService = new UserService(_userRepository);
+            var controller = new ProjectController(projService, userService);
 
             // Act
             var result = await controller.CreateProject(project);
@@ -170,10 +174,12 @@ public class ProjectControllerIntegrationTests
         public async Task CreateTask_ReturnsTask()
         {
             // Arrange
-            var task = new ProjectTask(ProjectTaskPriority.Medium) { Title = "Test Task", Description = "Description", DueDate = DateTime.UtcNow, Status = ProjectTaskStatus.Pending, ProjectId = _context.Project.First().Id };
+            var user = _context.UserAccount.First();
+            var task = new ProjectTask(ProjectTaskPriority.Medium) { Title = "Test Task", Description = "Description", DueDate = DateTime.UtcNow, Status = ProjectTaskStatus.Pending, ProjectId = _context.Project.First().Id, AssignedToUserAccount = user };
 
-            var service = new ProjectService(_repository);
-            var controller = new ProjectController(service);
+            var projService = new ProjectService(_projectRepository, _userRepository);
+            var userService = new UserService(_userRepository);
+            var controller = new ProjectController(projService, userService);
 
             // Act
             var result = await controller.CreateTask(task);
@@ -203,7 +209,7 @@ public class ProjectControllerIntegrationTests
             _context.Project.Add(project);
             _context.SaveChanges();
 
-            var task = new ProjectTask(ProjectTaskPriority.High) { Title = "Test Task", Description = "Description", DueDate = DateTime.UtcNow, Status = ProjectTaskStatus.Pending, ProjectId = project.Id };
+            var task = new ProjectTask(ProjectTaskPriority.High) { Title = "Test Task", Description = "Description", DueDate = DateTime.UtcNow, Status = ProjectTaskStatus.Pending, ProjectId = project.Id, AssignedToUserAccount = user };
             _context.ProjectTask.Add(task);
             _context.SaveChanges();
         }
@@ -217,8 +223,9 @@ public class ProjectControllerIntegrationTests
 
             var user = _context.UserAccount.First();
 
-            var service = new ProjectService(_repository);
-            var controller = new ProjectController(service);
+            var projService = new ProjectService(_projectRepository, _userRepository);
+            var userService = new UserService(_userRepository);
+            var controller = new ProjectController(projService, userService);
 
             // Act
             var result = await controller.UpdateTask(user.Id, task);
@@ -254,7 +261,7 @@ public class ProjectControllerIntegrationTests
             _context.Project.Add(project);
             _context.SaveChanges();
 
-            var task = new ProjectTask(ProjectTaskPriority.High) { Title = "Test Task", Description = "Description", DueDate = DateTime.UtcNow, Status = ProjectTaskStatus.Pending, ProjectId = project.Id };
+            var task = new ProjectTask(ProjectTaskPriority.High) { Title = "Test Task", Description = "Description", DueDate = DateTime.UtcNow, Status = ProjectTaskStatus.Pending, ProjectId = project.Id, AssignedToUserAccount = user };
             _context.ProjectTask.Add(task);
             _context.SaveChanges();
         }
@@ -265,8 +272,9 @@ public class ProjectControllerIntegrationTests
             // Arrange
             var taskId = _context.ProjectTask.First().Id;
 
-            var service = new ProjectService(_repository);
-            var controller = new ProjectController(service);
+            var projService = new ProjectService(_projectRepository, _userRepository);
+            var userService = new UserService(_userRepository);
+            var controller = new ProjectController(projService, userService);
 
             // Act
             var result = await controller.DeleteTask(taskId);
@@ -289,7 +297,7 @@ public class ProjectControllerIntegrationTests
             _context.Project.Add(project);
             _context.SaveChanges();
 
-            var task = new ProjectTask(ProjectTaskPriority.High) { Title = "Test Task", Description = "Description", DueDate = DateTime.UtcNow, Status = ProjectTaskStatus.Pending, ProjectId = project.Id };
+            var task = new ProjectTask(ProjectTaskPriority.High) { Title = "Test Task", Description = "Description", DueDate = DateTime.UtcNow, Status = ProjectTaskStatus.Pending, ProjectId = project.Id, AssignedToUserAccount = user };
             _context.ProjectTask.Add(task);
             _context.SaveChanges();
         }
@@ -301,8 +309,9 @@ public class ProjectControllerIntegrationTests
             var user = _context.UserAccount.First();
             var taskComment = new ProjectTaskComment { Comment = "Test Comment", ProjectTaskId = _context.ProjectTask.First().Id, SentAt = DateTime.UtcNow, UserAccount = user };
 
-            var service = new ProjectService(_repository);
-            var controller = new ProjectController(service);
+            var projService = new ProjectService(_projectRepository, _userRepository);
+            var userService = new UserService(_userRepository);
+            var controller = new ProjectController(projService, userService);
 
             // Act
             var result = await controller.AddTaskComment(taskComment);

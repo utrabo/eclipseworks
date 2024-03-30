@@ -8,10 +8,12 @@ namespace EclipseWorks.TaskManagementSystem.API.Controllers;
 public class ProjectController : ControllerBase
 {
     private readonly IProjectService _projectService;
+    private readonly IUserService _userService;
 
-    public ProjectController(IProjectService projectService)
+    public ProjectController(IProjectService projectService, IUserService userService)
     {
         _projectService = projectService;
+        _userService = userService;
     }
 
     [HttpGet("users/{userId}/projects")]
@@ -76,4 +78,13 @@ public class ProjectController : ControllerBase
         var newComment = await _projectService.AddTaskCommentAsync(comment);
         return Ok(newComment);
     }
+
+    [HttpGet("dashboard/{managerUserId}/performance/{userId}")]
+    public async Task<ActionResult<double>> GetCompletedTasksPerUserLast30Days(int managerUserId, int userId)
+    {
+        var completedTasks = await _projectService.GetCompletedTasksPerUserLast30Days(managerUserId, userId);
+        return Ok(completedTasks);
+    }
+
+
 }

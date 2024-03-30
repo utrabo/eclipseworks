@@ -8,6 +8,7 @@ public interface IProjectService
     Task<ProjectTask> CreateTaskAsync(ProjectTask projectTask);
     Task DeleteProjectAsync(int projectId);
     Task DeleteTaskAsync(int taskId);
+    Task<int> GetCompletedTasksPerUserLast30Days(int authenticatedUserId, int userId);
     Task<List<Project>> GetProjectsByUserIdAsync(int userId);
     Task<List<ProjectTask>> GetTasksByProjectIdAsync(int projectId);
     Task<Project> UpdateProjectAsync(Project project);

@@ -7,10 +7,12 @@ namespace EclipseWorks.TaskManagementSystem.Application.Services;
 public class ProjectService : IProjectService
 {
     private readonly IProjectRepository _projectRepository;
+    private readonly IUserRepository _userRepository;
 
-    public ProjectService(IProjectRepository projectRepository)
+    public ProjectService(IProjectRepository projectRepository, IUserRepository userRepository)
     {
         _projectRepository = projectRepository;
+        _userRepository = userRepository;
     }
 
     public async Task<Project> CreateProjectAsync(Project project)
@@ -68,5 +70,19 @@ public class ProjectService : IProjectService
     public async Task<ProjectTaskComment> AddTaskCommentAsync(ProjectTaskComment projectTaskComment)
     {
         return await _projectRepository.AddTaskCommentAsync(projectTaskComment);
+    }
+
+    public async Task<int> GetCompletedTasksPerUserLast30Days(int authenticatedUserId, int userId)
+    {
+        var authenticatedUser = await _userRepository.GetUserByIdAsync(authenticatedUserId);
+        if (authenticatedUser == null)
+            throw new InvalidOperationException("User not found.");
+        
+        if (authenticatedUser.Role != UserAccountRole.Manager)
+            throw new InvalidOperationException("Only managers can view the performance of other users.");
+
+        var fromDate = DateTime.UtcNow.AddDays(-30);
+        var completedTasks = await _projectRepository.GetCompletedTasksByUserIdSinceAsync(userId, fromDate);
+        return completedTasks;
     }
 }

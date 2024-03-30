@@ -71,3 +71,18 @@ GO
 
 ALTER TABLE ProjectTaskHistory ALTER COLUMN CurrentValue NVARCHAR(MAX) NULL;
 GO
+
+ALTER TABLE ProjectTask ADD CompletionDate DATETIME NULL;
+GO
+
+ALTER TABLE ProjectTask ADD AssignedToUserAccountId INT NOT NULL;
+GO
+
+ALTER TABLE ProjectTask
+ADD CONSTRAINT FK_ProjectTask_UserAccount
+FOREIGN KEY (AssignedToUserAccountId)
+REFERENCES UserAccount(Id)
+GO
+
+CREATE INDEX IDX_ProjectTask_UserAccount ON ProjectTask(AssignedToUserAccountId)
+GO

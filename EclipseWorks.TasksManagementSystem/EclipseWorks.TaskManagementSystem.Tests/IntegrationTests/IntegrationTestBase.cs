@@ -15,7 +15,8 @@ public class IntegrationTestBase : IDisposable
 {
     protected readonly EclipseWorksDbContext _context;
     protected readonly IConfigurationRoot _configuration;
-    protected readonly IProjectRepository _repository;
+    protected readonly IProjectRepository _projectRepository;
+    protected readonly IUserRepository _userRepository;
     protected readonly IDbContextTransaction _transaction;
 
     public IntegrationTestBase()
@@ -30,7 +31,8 @@ public class IntegrationTestBase : IDisposable
             .Options;
 
         _context = new EclipseWorksDbContext(options);
-        _repository = new ProjectRepository(_context);
+        _projectRepository = new ProjectRepository(_context);
+        _userRepository = new UserRepository(_context);
 
         _transaction = _context.Database.BeginTransaction();
 

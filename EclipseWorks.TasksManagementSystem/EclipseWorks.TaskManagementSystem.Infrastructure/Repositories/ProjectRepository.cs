@@ -70,6 +70,12 @@ public class ProjectRepository : IProjectRepository
         await _context.SaveChangesAsync();
     }
 
+    public async Task<int> GetCompletedTasksByUserIdSinceAsync(int userId, DateTime fromDate)
+    {
+        return await _context.ProjectTask
+            .CountAsync(task => task.AssignedToUserAccountId == userId && task.Status == ProjectTaskStatus.Completed && task.CompletionDate >= fromDate);
+    }
+
     public async Task<List<Project>> GetProjectsByUserIdAsync(int userId)
     {
         return await _context.Project.Where(project => project.UserAccountId == userId).ToListAsync();
@@ -92,6 +98,9 @@ public class ProjectRepository : IProjectRepository
         {
             throw new InvalidOperationException("Task not found.");
         }
+
+        if (originalTask.Status != ProjectTaskStatus.Completed && task.Status == ProjectTaskStatus.Completed)
+            task.CompletionDate = DateTime.UtcNow;
 
         _context.ProjectTask.Update(task);
 

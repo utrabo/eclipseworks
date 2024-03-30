@@ -31,5 +31,12 @@ public class EclipseWorksDbContext : DbContext
             .HasOne(h => h.ProjectTaskComment)
             .WithOne()
             .HasForeignKey<ProjectTaskHistory>(h => h.ProjectTaskCommentId);
+
+        modelBuilder.Entity<ProjectTask>()
+            .HasOne(pt => pt.AssignedToUserAccount)
+            .WithMany() 
+            .HasForeignKey(pt => pt.AssignedToUserAccountId)
+            .IsRequired();
+
     }
 }
