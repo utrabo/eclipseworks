@@ -40,6 +40,8 @@ public class ProjectServiceTests
         // Arrange
         var projectId = 1;
         var mockProjectRepository = new Mock<IProjectRepository>();
+        mockProjectRepository.Setup(repo => repo.GetProjectByIdAsync(projectId))
+                             .ReturnsAsync(new Project { Id = projectId, Name = "Project 1" });
         mockProjectRepository.Setup(repo => repo.GetTasksByProjectIdAsync(projectId))
                              .ReturnsAsync(Enumerable.Range(1, 20).Select(i => new ProjectTask(ProjectTaskPriority.Low) { Title = $"Task {i}", Description = $"Task {i}", DueDate = DateTime.Now, Status = ProjectTaskStatus.Pending, ProjectId = projectId }).ToList());
 

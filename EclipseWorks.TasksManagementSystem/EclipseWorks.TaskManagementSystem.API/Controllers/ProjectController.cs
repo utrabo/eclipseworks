@@ -72,8 +72,11 @@ public class ProjectController : ControllerBase
         if (originalTask.ProjectId != projectId)
             return BadRequest("Mismatch between route project ID and task project ID.");
 
-        originalTask.Title = taskUpdateDto.Title ?? originalTask.Title;
-        originalTask.Description = taskUpdateDto.Description ?? originalTask.Description;
+        if (!string.IsNullOrWhiteSpace(taskUpdateDto.Title))
+            originalTask.Title = taskUpdateDto.Title;
+
+        if (!string.IsNullOrWhiteSpace(taskUpdateDto.Description))
+            originalTask.Description = taskUpdateDto.Description ?? originalTask.Description;
 
         if (taskUpdateDto.CompletionDate.HasValue)
             originalTask.CompletionDate = taskUpdateDto.CompletionDate;
@@ -81,7 +84,8 @@ public class ProjectController : ControllerBase
         if (taskUpdateDto.DueDate.HasValue)
             originalTask.DueDate = taskUpdateDto.DueDate.Value;
 
-        originalTask.Status = taskUpdateDto.Status;
+        if (taskUpdateDto.Status.HasValue && !Enum.IsDefined(typeof(ProjectTaskStatus), taskUpdateDto.Status.Value))
+            return BadRequest("Invalid status value.");
 
         var updatedTask = await _projectService.UpdateTaskAsync(userId, originalTask);
         return Ok(updatedTask);

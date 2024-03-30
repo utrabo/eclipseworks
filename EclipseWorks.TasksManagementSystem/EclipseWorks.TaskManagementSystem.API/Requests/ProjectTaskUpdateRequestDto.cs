@@ -8,5 +8,5 @@ public class ProjectTaskUpdateRequestDto
     public string? Description { get; set; }
     public DateTime? DueDate { get; set; }
     public DateTime? CompletionDate { get; set; } = null;
-    public ProjectTaskStatus Status { get; set; }
+    public ProjectTaskStatus? Status { get; set; }
 }

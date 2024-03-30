@@ -22,11 +22,17 @@ public class ProjectService : IProjectService
 
     public async Task<ProjectTask> CreateTaskAsync(ProjectTask projectTask)
     {
+        var project = await _projectRepository.GetProjectByIdAsync(projectTask.ProjectId);
+        if (project == null)
+            throw new InvalidOperationException("Project not found.");
+
         var tasks = await _projectRepository.GetTasksByProjectIdAsync(projectTask.ProjectId);
         if (tasks.Count >= Constant.MaxTasksPerProject)
-        {
             throw new InvalidOperationException("Project has reached the maximum number of tasks.");
-        }
+
+        var user = await _userRepository.GetUserByIdAsync(projectTask.AssignedToUserAccountId);
+        if (user == null)
+            throw new InvalidOperationException("User not found.");
 
         return await _projectRepository.CreateTaskAsync(projectTask);
     }

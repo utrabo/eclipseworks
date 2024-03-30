@@ -211,9 +211,9 @@ public class ProjectControllerIntegrationTests
         public async Task CreateTask_ReturnsTask()
         {
             // Arrange
-            var user = _context.UserAccount.First();
+            var user = _context.UserAccount.OrderByDescending(t => t.Id).First();
             var project = _context.Project.OrderByDescending(t => t.Id).First();
-            var task = new ProjectTask(ProjectTaskPriority.Medium) { Title = "Test Task", Description = "Description", DueDate = DateTime.UtcNow, Status = ProjectTaskStatus.Pending, ProjectId = project.Id, AssignedToUserAccount = user };
+            var task = new ProjectTask(ProjectTaskPriority.Medium) { Title = "Test Task", Description = "Description", DueDate = DateTime.UtcNow, Status = ProjectTaskStatus.Pending, ProjectId = project.Id, AssignedToUserAccountId = user.Id };
 
             var projService = new ProjectService(_projectRepository, _userRepository);
             var userService = new UserService(_userRepository);
