@@ -1,0 +1,33 @@
+version: '3.8'
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    environment:
+      SA_PASSWORD: "Spock@2024"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlvolume:/var/opt/mssql
+    networks:
+      - eclipseworks-net
+
+  eclipseworksapi:
+    depends_on:
+      - sqlserver
+    build:
+      context: .
+      dockerfile: EclipseWorks.TaskManagementSystem.API/Dockerfile
+    ports:
+      - "8000:80"
+    volumes:
+      - ./EclipseWorks.TaskManagementSystem.Database:/dbinit/
+    networks:
+      - eclipseworks-net
+
+networks:
+  eclipseworks-net:
+    driver: bridge
+
+volumes:
+  sqlvolume:

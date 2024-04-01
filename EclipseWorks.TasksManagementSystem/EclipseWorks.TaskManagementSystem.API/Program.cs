@@ -13,6 +13,8 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        DatabaseInitializer.InitializeDatabase(builder.Configuration.GetConnectionString("Master"));
+
         // Add services to the container.
         builder.Services.AddControllers();
 
@@ -31,7 +33,7 @@ public class Program
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
-        app.UseHttpsRedirection();
+        //app.UseHttpsRedirection();
         app.UseAuthorization();
         app.UseSwagger();
         app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "EclipseWorks.TaskManagementSystem.API v1"));

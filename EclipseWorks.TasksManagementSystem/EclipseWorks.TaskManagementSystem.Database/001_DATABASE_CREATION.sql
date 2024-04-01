@@ -1,3 +1,11 @@
+IF EXISTS (
+    SELECT TOP 1 1 FROM sys.databases WHERE name = N'EclipseWorks'
+)
+BEGIN
+    ALTER DATABASE EclipseWorks SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE EclipseWorks;
+END
+GO
 
 CREATE DATABASE EclipseWorks;
 GO
@@ -61,7 +69,7 @@ CREATE INDEX IDX_ProjectTaskComment_UserAccount ON ProjectTaskComment(UserAccoun
 CREATE INDEX IDX_ProjectTaskHistory_ProjectTaskId ON ProjectTaskHistory(ProjectTaskId);
 CREATE INDEX IDX_ProjectTaskHistory_ChangedByUserId ON ProjectTaskHistory(ChangedByUserId);
 CREATE INDEX IDX_ProjectTaskHistory_ProjectTaskCommentId ON ProjectTaskHistory(ProjectTaskCommentId);
-go
+GO
 
 ALTER TABLE ProjectTaskHistory ALTER COLUMN PropertyName NVARCHAR(MAX) NULL
 GO
@@ -86,3 +94,6 @@ GO
 
 CREATE INDEX IDX_ProjectTask_UserAccount ON ProjectTask(AssignedToUserAccountId)
 GO
+
+INSERT INTO UserAccount VALUES ('Jane Doe', 1)
+INSERT INTO UserAccount VALUES ('John Smith', 2)

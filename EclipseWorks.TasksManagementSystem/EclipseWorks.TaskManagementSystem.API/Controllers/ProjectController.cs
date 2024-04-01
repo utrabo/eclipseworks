@@ -87,6 +87,9 @@ public class ProjectController : ControllerBase
         if (taskUpdateDto.Status.HasValue && !Enum.IsDefined(typeof(ProjectTaskStatus), taskUpdateDto.Status.Value))
             return BadRequest("Invalid status value.");
 
+        if (taskUpdateDto.Status.HasValue)
+            originalTask.Status = taskUpdateDto.Status.Value;
+
         var updatedTask = await _projectService.UpdateTaskAsync(userId, originalTask);
         return Ok(updatedTask);
     }

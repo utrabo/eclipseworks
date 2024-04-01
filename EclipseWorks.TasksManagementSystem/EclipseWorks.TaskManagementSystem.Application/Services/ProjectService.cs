@@ -45,6 +45,12 @@ public class ProjectService : IProjectService
             throw new InvalidOperationException("Project has pending tasks. Complete or remove the tasks first.");
         }
 
+        var projectTasks = await _projectRepository.GetTasksByProjectIdAsync(projectId);
+        foreach (var task in projectTasks)
+        {
+            await _projectRepository.DeleteTaskAsync(task.Id);
+        }
+
         await _projectRepository.DeleteProjectAsync(projectId);
     }
 
